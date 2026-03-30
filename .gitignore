@@ -5,10 +5,14 @@ node_modules/
 
 # Testing
 coverage/
+.nyc_output
 
 # Production
 build/
 dist/
+.next
+out
+.nuxt
 
 # Environment variables
 .env
@@ -16,12 +20,37 @@ dist/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*
+!.env.example
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
 # Misc
 .DS_Store
 .idea/
 .vscode/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+.vscode-test
+.cache
+.parcel-cache
+.eslintcache
+.stylelintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
+.fusebox/
+.dynamodb/
+.firebase/
+.tern-port
+
+# TypeScript
+*.tsbuildinfo
+
+# Service temporal files
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
