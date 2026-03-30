@@ -1,0 +1,41 @@
+.legend {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.legend__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend__dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+}
+
+.legend__text {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* ─── Dot Variants ─── */
+.legend-dot--available {
+    background: var(--green-bg);
+    border: 1px solid var(--green-border);
+}
+
+.legend-dot--occupied {
+    background: var(--red-bg);
+    border: 1px solid var(--red-border);
+}
+
+.legend-dot--booked {
+    background: var(--blue-bg);
+    border: 2px solid var(--blue);
+}

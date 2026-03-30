@@ -1,0 +1,74 @@
+.room {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    cursor: default;
+    transition: transform var(--transition), box-shadow var(--transition);
+    user-select: none;
+    position: relative;
+}
+
+.room:hover {
+    transform: scale(1.15);
+    z-index: 10;
+}
+
+/* ─── Tooltip ─── */
+.room[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface-3);
+    color: var(--text);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    white-space: nowrap;
+    border: 1px solid var(--border);
+    z-index: 100;
+    pointer-events: none;
+    animation: fadeIn 0.15s ease;
+}
+
+/* ─── Available ─── */
+.room--available {
+    background: var(--green-bg);
+    border: 1px solid var(--green-border);
+    color: var(--green);
+}
+
+.room--available:hover {
+    border-color: var(--green);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+}
+
+/* ─── Occupied ─── */
+.room--occupied {
+    background: var(--red-bg);
+    border: 1px solid var(--red-border);
+    color: var(--red);
+}
+
+.room--occupied:hover {
+    border-color: var(--red);
+}
+
+/* ─── Just Booked ─── */
+.room--just-booked {
+    background: var(--blue-bg);
+    border: 2px solid var(--blue);
+    color: var(--blue);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.room--just-booked:hover {
+    border-color: #60a5fa;
+    box-shadow: 0 0 16px rgba(59, 130, 246, 0.35);
+}

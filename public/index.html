@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Hotel Room Reservation System — Optimal room allocation with travel time minimization across 97 rooms and 10 floors.">
+  <title>Hotel Room Reservation System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0b0f1a;
+      --surface: #131825;
+      --surface-2: #1a2035;
+      --surface-3: #222940;
+      --border: #2a3250;
+      --text: #e2e8f0;
+      --text-muted: #8892b0;
+      --text-dim: #5a6480;
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.3);
+      --green: #10b981;
+      --green-bg: rgba(16, 185, 129, 0.12);
+      --green-border: rgba(16, 185, 129, 0.25);
+      --red: #ef4444;
+      --red-bg: rgba(239, 68, 68, 0.12);
+      --red-border: rgba(239, 68, 68, 0.25);
+      --blue: #3b82f6;
+      --blue-bg: rgba(59, 130, 246, 0.15);
+      --blue-border: rgba(59, 130, 246, 0.35);
+      --yellow: #f59e0b;
+      --yellow-bg: rgba(245, 158, 11, 0.12);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-xs: 6px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .app {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 24px 48px;
+    }
+
+    /* ─── Header ─── */
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      position: relative;
+    }
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), #818cf8);
+      border-radius: 2px;
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #c7d2fe 0%, #818cf8 40%, #6366f1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    /* ─── Stats Bar ─── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .stat-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .stat-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .stat-value.green { color: var(--green); }
+    .stat-value.red { color: var(--red); }
+    .stat-value.blue { color: var(--blue); }
+    .stat-value.accent { color: var(--accent); }
+
+    /* ─── Controls Panel ─── */
+    .controls {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .input-group label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .input-group input {
+      width: 64px;
+      padding: 10px 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 600;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-group input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      background: var(--surface-2);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn:hover {
+      background: var(--surface-3);
+      color: var(--text);
+      border-color: var(--text-dim);
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #818cf8);
+      border-color: #818cf8;
+      color: #fff;
+      box-shadow: 0 2px 12px var(--accent-glow);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #5558e6, #7578f0);
+      border-color: #a5b4fc;
+      color: #fff;
+    }
+    .btn-danger {
+      color: var(--red);
+      border-color: var(--red-border);
+    }
+    .btn-danger:hover {
+      background: var(--red-bg);
+      border-color: var(--red);
+      color: var(--red);
+    }
+    .controls-spacer { flex: 1; }
+
+    /* ─── Alert Banner ─── */
+    .alert {
+      padding: 14px 18px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideDown 0.3s ease;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .alert-success {
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      color: var(--green);
+    }
+    .alert-error {
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+      color: var(--red);
+    }
+    .alert-info {
+      background: var(--blue-bg);
+      border: 1px solid var(--blue-border);
+      color: var(--blue);
+    }
+    .alert-icon { font-size: 16px; }
+
+    /* ─── Hotel Grid ─── */
+    .hotel-wrapper {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    .hotel-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      margin-bottom: 16px;
+    }
+    .hotel-grid {
+      display: flex;
+      gap: 20px;
+      min-width: fit-content;
+    }
+    .lift-shaft {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+    }
+    .lift-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+    .lift-floor {
+      width: 44px;
+      height: 38px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .lift-floor:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .floors-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+    .floor-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .room {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-xs);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+      cursor: default;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .room:hover {
+      transform: scale(1.15);
+      z-index: 10;
+    }
+    .room-available {
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      color: var(--green);
+    }
+    .room-available:hover {
+      border-color: var(--green);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+    }
+    .room-occupied {
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+      color: var(--red);
+    }
+    .room-occupied:hover {
+      border-color: var(--red);
+    }
+    .room-booked {
+      background: var(--blue-bg);
+      border: 2px solid var(--blue);
+      color: var(--blue);
+      box-shadow: 0 0 16px rgba(59, 130, 246, 0.25);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 8px rgba(59, 130, 246, 0.2); }
+      50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
+    }
+    .room-spacer {
+      width: 38px;
+      height: 38px;
+    }
+
+    /* ─── Legend ─── */
+    .legend {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .legend-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+    }
+    .legend-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* ─── Booking History ─── */
+    .history {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+    .history-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+    .history-empty {
+      font-size: 13px;
+      color: var(--text-dim);
+      text-align: center;
+      padding: 20px;
+    }
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      font-size: 13px;
+      animation: slideDown 0.3s ease;
+    }
+    .history-item:last-child { margin-bottom: 0; }
+    .history-badge {
+      background: var(--blue-bg);
+      color: var(--blue);
+      border: 1px solid var(--blue-border);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .history-rooms {
+      color: var(--text);
+      font-weight: 500;
+      flex: 1;
+    }
+    .history-meta {
+      color: var(--text-dim);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    /* ─── Tooltip ─── */
+    .room[data-tooltip]:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface-3);
+      color: var(--text);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      white-space: nowrap;
+      border: 1px solid var(--border);
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 700px) {
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .controls { flex-direction: column; align-items: stretch; }
+      .controls-spacer { display: none; }
+      .room, .lift-floor { width: 32px; height: 32px; font-size: 8px; }
+      .room-spacer { width: 32px; height: 32px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app"></div>
+
+  <script>
+    // ─── Configuration ───
+    const HOTEL_CONFIG = {
+      floors: 10,
+      roomsPerFloor: [10, 10, 10, 10, 10, 10, 10, 10, 10, 7],
+      horizontalTime: 1,
+      verticalTime: 2,
+      maxBooking: 5
+    };
+
+    // ─── State ───
+    const state = {
+      rooms: new Map(),
+      alert: null,
+      lastTravelTime: null,
+      history: [],
+      bookingCount: 3
+    };
+
+    // ─── Room helpers ───
+    function parseRoomId(id) {
+      return { floor: Math.floor(id / 100), position: id % 100 };
+    }
+
+    function travelTime(a, b) {
+      const ra = parseRoomId(a), rb = parseRoomId(b);
+      return Math.abs(ra.floor - rb.floor) * HOTEL_CONFIG.verticalTime +
+             Math.abs(ra.position - rb.position) * HOTEL_CONFIG.horizontalTime;
+    }
+
+    function totalTravelTime(ids) {
+      if (ids.length <= 1) return 0;
+      const sorted = [...ids].sort((a, b) => {
+        const ra = parseRoomId(a), rb = parseRoomId(b);
+        return ra.floor !== rb.floor ? ra.floor - rb.floor : ra.position - rb.position;
+      });
+      let t = 0;
+      for (let i = 1; i < sorted.length; i++) t += travelTime(sorted[i - 1], sorted[i]);
+      return t;
+    }
+
+    // ─── Initialize rooms ───
+    function initRooms() {
+      state.rooms.clear();
+      for (let f = 1; f <= HOTEL_CONFIG.floors; f++) {
+        const cnt = HOTEL_CONFIG.roomsPerFloor[f - 1];
+        for (let p = 1; p <= cnt; p++) {
+          const id = f * 100 + p;
+          state.rooms.set(id, { id, floor: f, position: p, occupied: false, justBooked: false });
+        }
+      }
+    }
+
+    function clearJustBooked() {
+      state.rooms.forEach(r => { r.justBooked = false; });
+    }
+
+    // ─── Allocation Algorithm ───
+    function getAvailable() {
+      return [...state.rooms.values()].filter(r => !r.occupied);
+    }
+
+    function getAvailableByFloor() {
+      const m = new Map();
+      for (let f = 1; f <= HOTEL_CONFIG.floors; f++) m.set(f, []);
+      getAvailable().forEach(r => m.get(r.floor).push(r));
+      return m;
+    }
+
+    function findContiguous(floorRooms, count) {
+      if (floorRooms.length < count) return null;
+      const sorted = [...floorRooms].sort((a, b) => a.position - b.position);
+      let bestI = null, bestPos = Infinity;
+      for (let i = 0; i <= sorted.length - count; i++) {
+        let ok = true;
+        for (let j = 0; j < count - 1; j++) {
+          if (sorted[i + j + 1].position - sorted[i + j].position !== 1) { ok = false; break; }
+        }
+        if (ok && sorted[i].position < bestPos) { bestPos = sorted[i].position; bestI = i; }
+      }
+      return bestI !== null ? sorted.slice(bestI, bestI + count) : null;
+    }
+
+    function findSameFloor(count) {
+      const byFloor = getAvailableByFloor();
+      let best = null, bestScore = Infinity;
+      for (let f = 1; f <= HOTEL_CONFIG.floors; f++) {
+        const c = findContiguous(byFloor.get(f), count);
+        if (c) {
+          const tt = totalTravelTime(c.map(r => r.id));
+          const score = tt * 100 + c[0].position;
+          if (score < bestScore) {
+            bestScore = score;
+            best = { rooms: c, travelTime: tt, floor: f, strategy: 'SAME_FLOOR' };
+          }
+        }
+      }
+      return best;
+    }
+
+    function findCrossFloor(count) {
+      const avail = getAvailable();
+      if (avail.length < count) return null;
+      avail.sort((a, b) => a.floor !== b.floor ? a.floor - b.floor : a.position - b.position);
+      let best = null, bestTT = Infinity;
+      for (let i = 0; i <= avail.length - count; i++) {
+        const win = avail.slice(i, i + count);
+        const tt = totalTravelTime(win.map(r => r.id));
+        if (tt < bestTT) {
+          bestTT = tt;
+          best = { rooms: win, travelTime: tt, floors: [...new Set(win.map(r => r.floor))], strategy: 'CROSS_FLOOR' };
+        }
+      }
+      return best;
+    }
+
+    function bookRooms(count) {
+      if (count < 1 || count > HOTEL_CONFIG.maxBooking) return { success: false, error: `Book 1–${HOTEL_CONFIG.maxBooking} rooms only` };
+      const avail = getAvailable();
+      if (avail.length === 0) return { success: false, error: 'No rooms available' };
+      if (avail.length < count) return { success: false, error: `Only ${avail.length} rooms available, need ${count}` };
+
+      clearJustBooked();
+      const result = findSameFloor(count) || findCrossFloor(count);
+      if (!result) return { success: false, error: 'Allocation failed' };
+
+      result.rooms.forEach(r => {
+        const room = state.rooms.get(r.id);
+        room.occupied = true;
+        room.justBooked = true;
+      });
+
+      return {
+        success: true,
+        rooms: result.rooms.map(r => r.id),
+        travelTime: result.travelTime,
+        strategy: result.strategy,
+        floor: result.floor,
+        floors: result.floors || [result.floor]
+      };
+    }
+
+    // ─── Actions ───
+    function handleBook() {
+      const count = parseInt(state.bookingCount, 10);
+      if (isNaN(count) || count < 1 || count > 5) {
+        state.alert = { type: 'error', msg: 'Enter a number between 1 and 5' };
+        render();
+        return;
+      }
+      const result = bookRooms(count);
+      if (result.success) {
+        const floorInfo = result.floor ? `Floor ${result.floor}` : `Floors ${result.floors.join(', ')}`;
+        state.alert = { type: 'success', msg: `✓ Booked ${result.rooms.join(', ')} — ${result.strategy} (${floorInfo}) — ${result.travelTime} min travel` };
+        state.lastTravelTime = result.travelTime;
+        state.history.unshift({ rooms: result.rooms, strategy: result.strategy, travelTime: result.travelTime, time: new Date().toLocaleTimeString() });
+        if (state.history.length > 10) state.history.pop();
+      } else {
+        state.alert = { type: 'error', msg: result.error };
+      }
+      render();
+    }
+
+    function handleRandom() {
+      initRooms();
+      state.rooms.forEach(r => { r.occupied = Math.random() < 0.4; });
+      state.alert = { type: 'info', msg: '🎲 Random occupancy generated (~40%)' };
+      state.lastTravelTime = null;
+      render();
+    }
+
+    function handleReset() {
+      initRooms();
+      state.alert = { type: 'info', msg: '🔄 All rooms reset to available' };
+      state.lastTravelTime = null;
+      state.history = [];
+      render();
+    }
+
+    // ─── Stats ───
+    function getStats() {
+      let avail = 0, occ = 0;
+      state.rooms.forEach(r => r.occupied ? occ++ : avail++);
+      return { total: state.rooms.size, available: avail, occupied: occ, rate: Math.round((occ / state.rooms.size) * 100) };
+    }
+
+    // ─── Render ───
+    function render() {
+      const s = getStats();
+      const app = document.getElementById('app');
+
+      let html = `
+        <div class="header">
+          <h1>🏨 Hotel Room Reservation</h1>
+          <p>97 rooms across 10 floors · Optimal allocation with travel time minimization</p>
+        </div>
+
+        <div class="stats-bar">
+          <div class="stat-card">
+            <div class="stat-label">Total Rooms</div>
+            <div class="stat-value accent">${s.total}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Available</div>
+            <div class="stat-value green">${s.available}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Occupied</div>
+            <div class="stat-value red">${s.occupied}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Travel Time</div>
+            <div class="stat-value blue">${state.lastTravelTime !== null ? state.lastTravelTime + ' min' : '—'}</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="input-group">
+            <label for="roomCount">Rooms:</label>
+            <input type="number" id="roomCount" min="1" max="5" value="${state.bookingCount}">
+          </div>
+          <button class="btn btn-primary" id="btnBook">Book Rooms</button>
+          <button class="btn" id="btnRandom">🎲 Random</button>
+          <div class="controls-spacer"></div>
+          <button class="btn btn-danger" id="btnReset">Reset All</button>
+        </div>
+      `;
+
+      // Alert
+      if (state.alert) {
+        const cls = state.alert.type === 'success' ? 'alert-success' : state.alert.type === 'error' ? 'alert-error' : 'alert-info';
+        html += `<div class="alert ${cls}">${state.alert.msg}</div>`;
+      }
+
+      // Hotel grid (top floor first visually)
+      html += `<div class="hotel-wrapper">
+        <div class="hotel-title">Floor Plan</div>
+        <div class="hotel-grid">
+          <div class="lift-shaft">
+            <div class="lift-label">Lift</div>`;
+
+      for (let f = HOTEL_CONFIG.floors; f >= 1; f--) {
+        html += `<div class="lift-floor">F${f}</div>`;
+      }
+      html += `</div><div class="floors-container">`;
+
+      for (let f = HOTEL_CONFIG.floors; f >= 1; f--) {
+        html += `<div class="floor-row">`;
+        const cnt = HOTEL_CONFIG.roomsPerFloor[f - 1];
+        for (let p = 1; p <= cnt; p++) {
+          const id = f * 100 + p;
+          const room = state.rooms.get(id);
+          let cls = 'room ';
+          let tooltip = '';
+          if (room.justBooked) {
+            cls += 'room-booked';
+            tooltip = `Room ${id} — Just Booked`;
+          } else if (room.occupied) {
+            cls += 'room-occupied';
+            tooltip = `Room ${id} — Occupied`;
+          } else {
+            cls += 'room-available';
+            tooltip = `Room ${id} — Available`;
+          }
+          html += `<div class="${cls}" data-tooltip="${tooltip}">${id}</div>`;
+        }
+        // Spacers for floor 10
+        for (let s = cnt; s < 10; s++) {
+          html += `<div class="room-spacer"></div>`;
+        }
+        html += `</div>`;
+      }
+
+      html += `</div></div></div>`;
+
+      // Legend
+      html += `<div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background: var(--green-bg); border: 1px solid var(--green-border);"></div><span class="legend-text">Available</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background: var(--red-bg); border: 1px solid var(--red-border);"></div><span class="legend-text">Occupied</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background: var(--blue-bg); border: 2px solid var(--blue);"></div><span class="legend-text">Just Booked</span></div>
+      </div>`;
+
+      // History
+      html += `<div class="history">
+        <div class="history-title">Booking History</div>`;
+      if (state.history.length === 0) {
+        html += `<div class="history-empty">No bookings yet. Book some rooms to get started!</div>`;
+      } else {
+        state.history.forEach(h => {
+          html += `<div class="history-item">
+            <span class="history-badge">${h.strategy}</span>
+            <span class="history-rooms">Rooms ${h.rooms.join(', ')}</span>
+            <span class="history-meta">${h.travelTime} min · ${h.time}</span>
+          </div>`;
+        });
+      }
+      html += `</div>`;
+
+      app.innerHTML = html;
+
+      // Bind events
+      document.getElementById('btnBook').addEventListener('click', handleBook);
+      document.getElementById('btnRandom').addEventListener('click', handleRandom);
+      document.getElementById('btnReset').addEventListener('click', handleReset);
+      document.getElementById('roomCount').addEventListener('input', (e) => {
+        state.bookingCount = e.target.value;
+      });
+    }
+
+    // ─── Init ───
+    initRooms();
+    render();
+  </script>
+</body>
+</html>
