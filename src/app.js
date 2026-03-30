@@ -44,11 +44,19 @@ app.get('/health', (req, res) => {
     });
 });
 
+// Serve static files from the React app (production)
+app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
+
+// Serve the old landing page for now if needed, or redirect
+app.use('/legacy', express.static(path.join(__dirname, '..', 'public')));
+
 // API routes
 app.use('/api', bookingRoutes);
 
-// Serve static files (for frontend)
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// Catch-all route to serve React's index.html for any non-API routes
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
+});
 
 // Error handling
 app.use(notFoundHandler);
