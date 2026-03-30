@@ -8,7 +8,7 @@ import Room from '../Room';
 import HOTEL_CONFIG from '../../config/hotelConfig';
 import './HotelGrid.css';
 
-export default function HotelGrid({ rooms, justBookedIds = [] }) {
+export default function HotelGrid({ rooms, justBookedIds = [], filterStatus }) {
     const bookedSet = useMemo(() => new Set(justBookedIds), [justBookedIds]);
 
     // Build room lookup by ID for quick access
@@ -65,6 +65,7 @@ export default function HotelGrid({ rooms, justBookedIds = [] }) {
                                     key={room.id}
                                     room={room}
                                     isJustBooked={bookedSet.has(room.id)}
+                                    filterStatus={filterStatus}
                                 />
                             ))}
                             {/* Add spacers for floor 10 (7 rooms → pad to 10) */}

@@ -25,6 +25,7 @@ export default function App() {
     const { status, showSuccess, showError, showInfo, clear: clearStatus } = useStatusMessage();
     const [roomCount, setRoomCount] = useState(3);
     const [actionLoading, setActionLoading] = useState(false);
+    const [filterStatus, setFilterStatus] = useState(null);
 
     const handleBook = useCallback(async () => {
         const count = parseInt(roomCount, 10);
@@ -138,10 +139,17 @@ export default function App() {
             <StatusMessage status={status} onDismiss={clearStatus} />
 
             {/* Hotel Floor Plan */}
-            <HotelGrid rooms={rooms} justBookedIds={justBookedIds} />
+            <HotelGrid
+                rooms={rooms}
+                justBookedIds={justBookedIds}
+                filterStatus={filterStatus}
+            />
 
             {/* Legend */}
-            <Legend />
+            <Legend
+                filterStatus={filterStatus}
+                onFilterClick={setFilterStatus}
+            />
 
             {/* Booking Details */}
             {lastBooking && (

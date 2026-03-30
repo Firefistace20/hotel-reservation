@@ -10,6 +10,25 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.legend__item:hover {
+    background-color: var(--surface-2);
+}
+
+.legend__item--active {
+    background-color: var(--surface-2);
+    border-color: var(--border);
+}
+
+.legend__item--dimmed {
+    opacity: 0.4;
 }
 
 .legend__dot {
