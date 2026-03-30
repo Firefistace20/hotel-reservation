@@ -8,6 +8,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 
 const bookingRoutes = require('./routes/bookingRoutes');
 const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
@@ -50,8 +51,17 @@ app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
 // Serve the old landing page for now if needed, or redirect
 app.use('/legacy', express.static(path.join(__dirname, '..', 'public')));
 
-// API routes
-app.use('/api', bookingRoutes);
+// API Rate Limiting (100 requests per 15 minutes)
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: { success: false, error: 'Too many requests from this IP, please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// API routes with rate limiter
+app.use('/api', apiLimiter, bookingRoutes);
 
 // Catch-all route to serve React's index.html for any non-API routes
 app.get('*', (req, res) => {

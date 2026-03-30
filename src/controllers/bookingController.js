@@ -4,9 +4,14 @@
  */
 
 const BookingService = require('../services/bookingService');
+const { validationResult } = require('express-validator');
+const { Mutex } = require('async-mutex');
 
 // Singleton instance (in production, consider dependency injection)
 const bookingService = new BookingService();
+
+// Global mutex to prevent booking race conditions
+const bookingMutex = new Mutex();
 
 /**
  * GET /api/rooms
@@ -74,28 +79,23 @@ const getStats = async (req, res, next) => {
  */
 const bookRooms = async (req, res, next) => {
     try {
-        const { count, bookingId } = req.body;
-
-        // Validate input
-        if (count === undefined || count === null) {
+        // Validate request syntax
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
             return res.status(400).json({
                 success: false,
-                error: 'Room count is required',
-                code: 'MISSING_COUNT'
+                error: errors.array()[0].msg,
+                code: 'VALIDATION_ERROR'
             });
         }
 
+        const { count, bookingId } = req.body;
         const parsedCount = parseInt(count, 10);
 
-        if (isNaN(parsedCount)) {
-            return res.status(400).json({
-                success: false,
-                error: 'Room count must be a number',
-                code: 'INVALID_COUNT'
-            });
-        }
-
-        const result = bookingService.bookRooms(parsedCount, bookingId);
+        // Lock the booking process to prevent double-booking race conditions
+        const result = await bookingMutex.runExclusive(async () => {
+            return bookingService.bookRooms(parsedCount, bookingId);
+        });
 
         if (result.success) {
             res.status(201).json({
@@ -123,6 +123,16 @@ const bookRooms = async (req, res, next) => {
  */
 const setRandomOccupancy = async (req, res, next) => {
     try {
+        // Validate request syntax
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                error: errors.array()[0].msg,
+                code: 'VALIDATION_ERROR'
+            });
+        }
+
         let { probability } = req.body;
 
         // Default probability
@@ -130,17 +140,12 @@ const setRandomOccupancy = async (req, res, next) => {
             probability = 0.4;
         }
 
-        // Validate probability
         probability = parseFloat(probability);
-        if (isNaN(probability) || probability < 0 || probability > 1) {
-            return res.status(400).json({
-                success: false,
-                error: 'Probability must be a number between 0 and 1',
-                code: 'INVALID_PROBABILITY'
-            });
-        }
 
-        const result = bookingService.setRandomOccupancy(probability);
+        // Lock to prevent conflicts
+        const result = await bookingMutex.runExclusive(async () => {
+            return bookingService.setRandomOccupancy(probability);
+        });
 
         res.json({
             success: true,
@@ -157,7 +162,10 @@ const setRandomOccupancy = async (req, res, next) => {
  */
 const resetRooms = async (req, res, next) => {
     try {
-        const result = bookingService.reset();
+        // Lock to prevent state conflicts during reset
+        const result = await bookingMutex.runExclusive(async () => {
+            return bookingService.reset();
+        });
 
         res.json({
             success: true,
@@ -175,15 +183,17 @@ const resetRooms = async (req, res, next) => {
  */
 const calculateTravelTime = async (req, res, next) => {
     try {
-        const { rooms } = req.body;
-
-        if (!Array.isArray(rooms) || rooms.length === 0) {
+        // Validate request syntax
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
             return res.status(400).json({
                 success: false,
-                error: 'Rooms must be a non-empty array of room IDs',
-                code: 'INVALID_ROOMS'
+                error: errors.array()[0].msg,
+                code: 'VALIDATION_ERROR'
             });
         }
+
+        const { rooms } = req.body;
 
         const travelTime = bookingService.calculateTotalTravelTime(rooms);
 
